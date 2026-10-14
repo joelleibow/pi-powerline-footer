@@ -70,6 +70,26 @@ test("bash completions are opt-in", () => {
   assert.equal(parseBashModeSettings({ bashMode: { completions: false } }).completions, false);
 });
 
+test("fast editor render defers when pi embedded a status in the editor border", () => {
+  const editor: Record<string, any> = {
+    focused: true,
+    isShowingAutocomplete: () => false,
+    tui: { terminal: { rows: 24 } },
+  };
+  editor.borderColor = (text: string) => text;
+  Reflect.set(editor, "state", {
+    lines: ["intro", "x".repeat(5000)],
+    cursorLine: 1,
+    cursorCol: 5000,
+  });
+  Reflect.set(editor, "workingStatusIndicator", {});
+
+  assert.equal(
+    renderFastPowerlineEditor(editor, 80, { bashModeActive: false, completionsEnabled: false }),
+    null,
+  );
+});
+
 test("fast editor render keeps Powerline chrome for large drafts", () => {
   const editor: Record<string, any> = {
     focused: true,

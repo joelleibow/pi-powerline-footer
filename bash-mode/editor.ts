@@ -122,9 +122,24 @@ export class BashModeEditor extends CustomEditor {
   private readonly horizontalMoveBindingConflicts = new Map<string, boolean>();
 
   constructor(tui: any, theme: any, keybindings: KeybindingsManager, options: BashModeEditorOptions) {
-    super(tui, theme, keybindings);
+    // Pi renders working, compaction, summarization, and retry status into the
+    // editor's top border, and a custom editor only gets that by opting in.
+    // Older Pi releases ignore the option and fall back to the standalone row.
+    super(tui, theme, keybindings, { embedWorkingStatus: true });
     this.keybindingsRef = keybindings;
     this.optionsRef = options;
+  }
+
+  /**
+   * The editor's own top border at `width` columns when Pi has embedded a
+   * status into it, otherwise null. Pi only ever draws an embedded status into
+   * that one line, so the Powerline frame has to reuse it rather than lay a
+   * plain rule over it.
+   */
+  renderEmbeddedTopBorder(width: number): string | null {
+    if (Reflect.get(this, "workingStatusIndicator") == null) return null;
+    const scrollOffset = Reflect.get(this, "scrollOffset");
+    return this.renderTopBorder(width, typeof scrollOffset === "number" ? scrollOffset : 0);
   }
 
   setAutocompleteProvider(provider: AutocompleteProvider): void {

@@ -1037,6 +1037,8 @@ export function renderFastPowerlineEditor(
   if (width < 10 || options.completionsEnabled) return null;
   if (Reflect.get(editor as object, "isInPaste") === true || Reflect.get(editor as object, "jumpMode") != null) return null;
   if (Reflect.get(editor as object, "autocompleteState") != null) return null;
+  // This path lays down its own top border, so an embedded status would be lost.
+  if (Reflect.get(editor as object, "workingStatusIndicator") != null) return null;
 
   const isShowingAutocomplete = Reflect.get(editor as object, "isShowingAutocomplete");
   if (typeof isShowingAutocomplete === "function" && isShowingAutocomplete.call(editor)) return null;
@@ -3491,7 +3493,11 @@ export default function powerlineFooter(pi: ExtensionAPI) {
           }
 
           const result: string[] = [];
-          result.push(" " + colorEditorBorder(editor, "─".repeat(width - 2)));
+          // Reuse the editor's own top border when Pi has embedded a status in
+          // it. The base render above ran at contentWidth, so an embedded line
+          // has to be re-rendered at the width this frame actually uses.
+          const embeddedTopBorder = editor.renderEmbeddedTopBorder(width - 2);
+          result.push(" " + (embeddedTopBorder ?? colorEditorBorder(editor, "─".repeat(width - 2))));
 
           for (let i = 1; i < bottomBorderIndex; i++) {
             const prefix = i === 1 ? promptPrefix : contPrefix;

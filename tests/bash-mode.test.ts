@@ -744,6 +744,51 @@ test("bash editor refreshes shell ghost state after a bracketed paste completes"
   }
 });
 
+test("bash editor exposes pi's embedded top border only when a status is present", async () => {
+  const links = ensureEditorModuleLinks();
+
+  try {
+    const { BashModeEditor } = await import("../bash-mode/editor.ts");
+    const { KeybindingsManager } = await import(new URL("../node_modules/@earendil-works/pi-coding-agent/dist/core/keybindings.js", import.meta.url).href);
+    const keybindings = KeybindingsManager.create();
+    const editor = new BashModeEditor(
+      { requestRender() {}, terminal: { columns: 80, rows: 24 } },
+      {},
+      keybindings,
+      {
+        keybindings,
+        isBashModeActive: () => false,
+        isShellRunning: () => false,
+        onExitBashMode() {},
+        onSubmitCommand() {},
+        onInterrupt() {},
+        onNotify() {},
+        getHistoryEntries: () => [],
+        resolveGhostSuggestion: async () => null,
+      },
+    );
+    Reflect.set(editor, "borderColor", (text: string) => text);
+
+    // Pi only embeds a status into the editor border for an editor that opts in,
+    // and only when that editor can accept an indicator.
+    assert.equal(Reflect.get(editor, "embedWorkingStatus"), true);
+    assert.equal(typeof editor.setWorkingStatusIndicator, "function");
+
+    assert.equal(editor.renderEmbeddedTopBorder(40), null);
+
+    Reflect.set(editor, "workingStatusIndicator", {
+      renderInBorder: () => "⠋ Working",
+      renderSpinnerInBorder: () => "⠋",
+    });
+
+    const border = editor.renderEmbeddedTopBorder(40);
+    assert.ok(border?.includes("Working"));
+    assert.equal(border?.length, 40);
+  } finally {
+    links.cleanup();
+  }
+});
+
 test("bash editor inserts Finder file drops as path strings", async (t) => {
   if (process.platform === "win32") {
     t.skip("Finder file drops are macOS/POSIX paths");
