@@ -3,7 +3,7 @@
 ## [Unreleased]
 
 ### Fixed
-- **Working indicator stays in the editor border** — Pi renders an embedded working, compaction, summarization, or retry status into the editor's top border, and a custom editor only gets one by opting in. The Powerline editor now opts in and reuses that border instead of laying a plain rule over it, so the indicator no longer moves out of the input frame to the status row above the editor.
+- **Working indicator stays in the editor border** — Pi renders an embedded working, compaction, summarization, or retry status into the editor's top border, and a custom editor only gets one by opting in. The Powerline editor now opts in and reuses that border instead of laying a plain rule over it, so the indicator no longer moves out of the input frame to the status row above the editor. Thanks to [@joelleibow](https://github.com/joelleibow) for #249.
 
 ## [0.20.1] - 2026-10-12
 
